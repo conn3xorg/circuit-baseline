@@ -64,12 +64,27 @@ jobs:
         env:
           CONTAINERFILE: ${{ github.workspace }}/conn3x/test/images/${{ matrix.distro }}/Containerfile
         run: ./up.sh
+      # Rocky 10's systemd 257 can't take readiness notifications from a
+      # service that runs as another user when it runs on the runner's newer
+      # kernel, so chronyd fails to start in the container. Real Rocky 10
+      # hosts run their own kernel and aren't affected. Starting chronyd as a
+      # simple service keeps the test about the circuit.
+      - name: Work around Rocky 10 notifications in a container
+        if: matrix.distro == 'rocky10'
+        run: |
+          podman exec circuit-baseline sh -c 'mkdir -p /etc/systemd/system/chronyd.service.d &&
+            printf "[Service]\nType=simple\n" > /etc/systemd/system/chronyd.service.d/container.conf'
       - name: Apply, then plan again with no changes
         working-directory: examples/local
         run: |
           conn3x init
           conn3x apply -auto-approve
           conn3x plan -detailed-exitcode
+      - name: Show the host's journal
+        if: failure()
+        run: |
+          podman exec circuit-baseline systemctl --failed --no-pager || true
+          podman exec circuit-baseline journalctl -b --no-pager -n 200 || true
       - name: Clean up
         if: always()
         working-directory: examples/local
