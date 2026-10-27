@@ -70,6 +70,11 @@ jobs:
           conn3x init
           conn3x apply -auto-approve
           conn3x plan -detailed-exitcode
+      - name: Show the host's journal
+        if: failure()
+        run: |
+          podman exec circuit-baseline systemctl --failed --no-pager || true
+          podman exec circuit-baseline journalctl -b --no-pager -n 200 || true
       - name: Clean up
         if: always()
         working-directory: examples/local
