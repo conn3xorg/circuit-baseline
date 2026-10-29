@@ -95,7 +95,7 @@ Requires Conn3x v0.6.4 or later and systemd on each host.
 
 Rocky Linux 10, Fedora 45, Ubuntu 24.04 and Debian 13. CI applies [examples/local](examples/local) to each and checks that the second plan has no changes.
 
-It was also applied by hand, with six other circuits, to an Ubuntu 24.04 droplet and a Rocky Linux 10 droplet with SELinux enforcing. On both, the time zone was set, chrony was running, and `sshd -T` showed `passwordauthentication no` and `permitrootlogin without-password`. After a reboot the same held, the plan had no changes and the audit log had no SELinux denials.
+It was also applied by hand, with six other circuits, to an Ubuntu 24.04 droplet and a Rocky Linux 10 droplet with SELinux enforcing. On both, the time zone was set, chrony was running, and `sshd -T` showed `passwordauthentication no` and `permitrootlogin without-password`. After a reboot the same held, the plan had no changes and the audit log had no SELinux denials. The same checks passed on Fedora 44, with SELinux enforcing, and Debian 13 droplets, before and after a reboot.
 
 ## License
 
