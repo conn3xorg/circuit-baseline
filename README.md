@@ -8,7 +8,7 @@ Root can still log in with a key afterwards (`PermitRootLogin prohibit-password`
 
 ```hcl
 module "baseline" {
-  source = "github.com/conn3xorg/circuit-baseline?ref=v0.1.0"
+  source = "github.com/conn3xorg/circuit-baseline?ref=v0.1.1"
 
   hosts = {
     web1 = "203.0.113.10"
@@ -23,7 +23,7 @@ For hosts created in the same plan, pass host objects with the host key you gene
 
 ```hcl
 module "baseline" {
-  source = "github.com/conn3xorg/circuit-baseline?ref=v0.1.0"
+  source = "github.com/conn3xorg/circuit-baseline?ref=v0.1.1"
 
   hosts = {
     for name, d in digitalocean_droplet.app : name => {
@@ -93,7 +93,7 @@ Requires Conn3x v0.6.4 or later and systemd on each host.
 
 ## Tested on
 
-Rocky Linux 10, Fedora 45, Ubuntu 24.04 and Debian 13. CI applies [examples/local](examples/local) to each and checks that the second plan has no changes.
+Rocky Linux 10, Fedora 45, Ubuntu 24.04 and Debian 13. CI applies [examples/local](examples/local) to each and checks that the second plan has no changes. It then logs in over SSH with the key, checks sshd no longer offers passwords, before and after a restart, and checks the time zone is in effect and chrony reaches a time source.
 
 It was also applied by hand, with six other circuits, to an Ubuntu 24.04 droplet and a Rocky Linux 10 droplet with SELinux enforcing. On both, the time zone was set, chrony was running, and `sshd -T` showed `passwordauthentication no` and `permitrootlogin without-password`. After a reboot the same held, the plan had no changes and the audit log had no SELinux denials. The same checks passed on Fedora 44, with SELinux enforcing, and Debian 13 droplets, before and after a reboot.
 
