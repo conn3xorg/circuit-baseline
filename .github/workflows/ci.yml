@@ -85,6 +85,24 @@ jobs:
         run: |
           podman exec circuit-baseline systemctl --failed --no-pager || true
           podman exec circuit-baseline journalctl -b --no-pager -n 200 || true
+      # sshd lists the methods it will take when it refuses a login, so what
+      # the settings changed shows from outside the host.
+      - name: Check sshd, the clock and the time zone do what the circuit set
+        working-directory: examples/local
+        run: |
+          login() { ssh -i id_ed25519 -p 2222 -o UserKnownHostsFile=known_hosts -o IdentitiesOnly=yes -o BatchMode=yes -o ConnectTimeout=10 "$@"; }
+          check_sshd() {
+            login root@127.0.0.1 true
+            refused=$(login -o PubkeyAuthentication=no -o PreferredAuthentications=password root@127.0.0.1 true 2>&1 || true)
+            echo "$refused" | grep -q 'Permission denied'
+            if echo "$refused" | grep -q 'password'; then echo "sshd still offers passwords: $refused" >&2; exit 1; fi
+          }
+          check_sshd
+          [ "$(login root@127.0.0.1 'date +%Z')" = "$(TZ=Europe/Dublin date +%Z)" ]
+          podman exec circuit-baseline chronyc -n waitsync 30 0 0 5
+          [ "$(podman exec circuit-baseline sysctl -n net.ipv4.tcp_syncookies)" = 1 ]
+          podman exec circuit-baseline sh -c 'systemctl restart sshd 2>/dev/null || systemctl restart ssh'
+          check_sshd
       - name: Clean up
         if: always()
         working-directory: examples/local
