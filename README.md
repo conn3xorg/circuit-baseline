@@ -10,7 +10,7 @@ Root can still log in with a key afterwards (`PermitRootLogin prohibit-password`
 
 ```hcl
 module "baseline" {
-  source = "github.com/conn3xorg/circuit-baseline?ref=v0.1.1"
+  source = "github.com/conn3xorg/circuit-baseline?ref=v0.2.0"
 
   hosts = {
     web1 = "203.0.113.10"
@@ -25,7 +25,7 @@ For hosts created in the same plan, pass host objects with the host key you gene
 
 ```hcl
 module "baseline" {
-  source = "github.com/conn3xorg/circuit-baseline?ref=v0.1.1"
+  source = "github.com/conn3xorg/circuit-baseline?ref=v0.2.0"
 
   hosts = {
     for name, d in digitalocean_droplet.app : name => {
