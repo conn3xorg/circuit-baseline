@@ -48,7 +48,7 @@ On each host, in order:
 1. Installs `tzdata` and sets the time zone.
 2. Installs chrony and starts it now and at boot (`chronyd` on Rocky and Fedora, `chrony` on Debian and Ubuntu).
 3. Sets each kernel parameter in `sysctl`, in the running kernel and in `/etc/sysctl.d`.
-4. Writes `sshd_settings` to `/etc/ssh/sshd_config.d/00-conn3x-baseline.conf`, checks the result with `sshd -t`, and reloads sshd (`sshd` or `ssh`) only when the file changed.
+4. Writes `sshd_settings` to `/etc/ssh/sshd_config.d/00-conn3x-baseline.conf`, testing it with `sshd -t` alongside the rest of the config before it replaces the old one, and reloads sshd (`sshd` or `ssh`) only when the file changed. A drop-in sshd rejects never replaces the old one: the apply fails before the reload, and a restart or a reboot reads the last good drop-in.
 
 sshd keeps the first value it reads for each keyword, and all four distros include `sshd_config.d` at the top of `sshd_config`. The `00-` drop-in sorts first, so it wins over `sshd_config` and over drop-ins such as Ubuntu's `50-cloud-init.conf`. If the check fails, the apply stops before the reload and the running sshd keeps its old settings.
 
@@ -91,7 +91,7 @@ None.
 
 ## Requirements
 
-Requires Conn3x v0.6.4 or later and systemd on each host.
+Requires Conn3x v0.7.0 or later and systemd on each host.
 
 ## Tested on
 

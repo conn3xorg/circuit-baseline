@@ -103,6 +103,17 @@ jobs:
           [ "$(podman exec circuit-baseline sysctl -n net.ipv4.tcp_syncookies)" = 1 ]
           podman exec circuit-baseline sh -c 'systemctl restart sshd 2>/dev/null || systemctl restart ssh'
           check_sshd
+      # MaxAuthTries takes a number, so sshd rejects "lots".
+      - name: Check a value sshd rejects fails the apply, never reaches the drop-in, and sshd survives a restart
+        working-directory: examples/local
+        run: |
+          printf 'module "baseline" {\n  sshd_settings = { MaxAuthTries = "lots" }\n}\n' > bad_override.tf
+          conn3x apply -auto-approve && exit 1
+          rm bad_override.tf
+          podman exec circuit-baseline grep -q lots /etc/ssh/sshd_config.d/00-conn3x-baseline.conf && exit 1
+          podman exec circuit-baseline sh -c 'systemctl restart sshd 2>/dev/null || systemctl restart ssh'
+          conn3x apply -auto-approve
+          conn3x plan -detailed-exitcode
       - name: Clean up
         if: always()
         working-directory: examples/local
